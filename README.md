@@ -1,5 +1,5 @@
 # attiny1614example
-Code Examples for ATTiny1614(Microchip's AVR)
+Code Examples for ATtiny1614(Microchip's AVR)
 
 ・TWI(I2C)  
 ・USART  
