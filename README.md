@@ -3,7 +3,7 @@ Code Examples for ATtiny1614(Microchip's AVR)
 
 ・TWI(I2C)  
 ・USART  
-・SPI(master/slave)
+・SPI(master/slave)  
 ・TCA(16bit Timer TypeA)  
 ・TCB(16bit Timer TypeB)  
 ・RTC(Real Time Clock with Xtal)  
