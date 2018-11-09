@@ -5,7 +5,7 @@
  *
  * Created: 2018/10/30
  * Author : chromia <chromia@outlook.jp>
- */ 
+ */
 
 #include <avr/io.h>
 #define F_CPU 20000000
@@ -58,93 +58,92 @@ volatile bool twi_error = false;
 
 bool TWI_init()
 {
-	// TWI Configuration
-	TWI0.MBAUD = TWI_PARAM_BAUD;
-	TWI0.MCTRLA = TWI_WIEN_bm | TWI_ENABLE_bm;
-	TWI0.MSTATUS |= (TWI_RIF_bm | TWI_WIF_bm);	
-	TWI0.MSTATUS |= TWI_BUSSTATE_IDLE_gc;
-	return true;
+    // TWI Configuration
+    TWI0.MBAUD = TWI_PARAM_BAUD;
+    TWI0.MCTRLA = TWI_WIEN_bm | TWI_ENABLE_bm;
+    TWI0.MSTATUS |= (TWI_RIF_bm | TWI_WIF_bm);
+    TWI0.MSTATUS |= TWI_BUSSTATE_IDLE_gc;
+    return true;
 }
 
 bool TWI_sendMessage(uint8_t address, const uint8_t *message, uint8_t length)
 {
-	// Copy Message Data
-	if(length > TWI_BUFFER_SIZE) return false;
-	memcpy(twi_buffer, message, length);
-	twi_ptr = twi_buffer;
-	twi_rest = length;
-	
-	twi_sending = true;
-	
-	// Send Slave Address(Start Sending)
-	TWI0.MADDR = address;
-	
-	// Wait until finished
-	while(twi_sending);
-	
-	return !twi_error;
+    // Copy Message Data
+    if(length > TWI_BUFFER_SIZE) return false;
+    memcpy(twi_buffer, message, length);
+    twi_ptr = twi_buffer;
+    twi_rest = length;
+
+    twi_sending = true;
+
+    // Send Slave Address(Start Sending)
+    TWI0.MADDR = address;
+
+    // Wait until finished
+    while(twi_sending);
+
+    return !twi_error;
 }
 
 ISR(TWI0_TWIM_vect)
 {
-	if(TWI0.MSTATUS & TWI_RXACK_bm){
-		twi_error = true;
-		twi_sending = false;
-	}
-	if(twi_rest){
-		// Send Next Character
-		--twi_rest;
-		TWI0.MSTATUS |= (TWI_WIF_bm || TWI_RIF_bm);
-		TWI0.MDATA = *twi_ptr++;
-	}else{
-		// Generate STOP Condition
-		TWI0.MCTRLB |= TWI_ACKACT_NACK_gc;
-		TWI0.MCTRLB |= TWI_MCMD_STOP_gc;
-		twi_sending = false;
-	}
+    if(TWI0.MSTATUS & TWI_RXACK_bm){
+        twi_error = true;
+        twi_sending = false;
+    }
+    if(twi_rest){
+        // Send Next Character
+        --twi_rest;
+        TWI0.MSTATUS |= (TWI_WIF_bm || TWI_RIF_bm);
+        TWI0.MDATA = *twi_ptr++;
+    }else{
+        // Generate STOP Condition
+        TWI0.MCTRLB |= TWI_ACKACT_NACK_gc;
+        TWI0.MCTRLB |= TWI_MCMD_STOP_gc;
+        twi_sending = false;
+    }
 }
 
 bool LCD_setMessage(uint8_t address, uint8_t cont, uint8_t data)
 {
-	uint8_t msg[] = { cont, data };
-	return TWI_sendMessage(address, msg, 2);
+    uint8_t msg[] = { cont, data };
+    return TWI_sendMessage(address, msg, 2);
 }
 
 int main(void)
-{	
-	// System Clock
-	_PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, 0); // Disable prescaler ( CLK_PER=20MHz )
-	
-	_delay_ms(40); // Wait until the LCD is ready
-	
-	TWI_init();
-	
-	sei();
-	
-	// Send Commands
-	LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x01); // Clear Display
-	_delay_ms(2);
-	LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x38); // Function Set : 8bitI/F, 2Line, 5x8Font 
-	_delay_us(50);
-	LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x0C); // Display ON/OFF : display=ON, cursor=OFF, blink=OFF
-	_delay_us(50);
-	LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x06); // Entry Mode Set : Step to Right
-	_delay_us(50);
-	// Write Data
-	LCD_setMessage(LCD_ADDR, LCD_DATA, 0x48);    // Write Data : 'H'
-	_delay_ms(2);
-	LCD_setMessage(LCD_ADDR, LCD_DATA, 0x45);    // Write Data : 'E'
-	_delay_ms(2);
-	LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4C);    // Write Data : 'L'
-	_delay_ms(2);
-	LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4C);    // Write Data : 'L'
-	_delay_ms(2);
-	LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4F);    // Write Data : 'O'
-	_delay_ms(2);
-	
-	while(1)
-	{
-		
-	}
-}
+{
+    // System Clock
+    _PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, 0); // Disable prescaler ( CLK_PER=20MHz )
 
+    _delay_ms(40); // Wait until the LCD is ready
+
+    TWI_init();
+
+    sei();
+
+    // Send Commands
+    LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x01); // Clear Display
+    _delay_ms(2);
+    LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x38); // Function Set : 8bitI/F, 2Line, 5x8Font
+    _delay_us(50);
+    LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x0C); // Display ON/OFF : display=ON, cursor=OFF, blink=OFF
+    _delay_us(50);
+    LCD_setMessage(LCD_ADDR, LCD_COMMAND, 0x06); // Entry Mode Set : Step to Right
+    _delay_us(50);
+    // Write Data
+    LCD_setMessage(LCD_ADDR, LCD_DATA, 0x48);    // Write Data : 'H'
+    _delay_ms(2);
+    LCD_setMessage(LCD_ADDR, LCD_DATA, 0x45);    // Write Data : 'E'
+    _delay_ms(2);
+    LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4C);    // Write Data : 'L'
+    _delay_ms(2);
+    LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4C);    // Write Data : 'L'
+    _delay_ms(2);
+    LCD_setMessage(LCD_ADDR, LCD_DATA, 0x4F);    // Write Data : 'O'
+    _delay_ms(2);
+
+    while(1)
+    {
+
+    }
+}
