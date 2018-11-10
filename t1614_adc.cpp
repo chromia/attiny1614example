@@ -22,7 +22,7 @@
 int main(void)
 {
     // LED Luminance Control by PWM
-    // Potentiometer(PB1) -> ADC -> TCB(PWM) -> LED(PB5)
+    // Potentiometer(PB6) -> ADC -> TCB(PWM) -> LED(PB5)
 
     // Port Configuration
     PORTA.DIRSET = LED_bm;

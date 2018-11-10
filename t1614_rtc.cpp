@@ -9,12 +9,10 @@
 #include <avr/interrupt.h>
 
 /* PIN Assign
- * 1.VCC   : 5V
  * 6.TOSC1 : External Xtal 32.768KHz
  * 7.TOSC2 : External Xtal 32.768KHz
  * 11.PA1  : USART TX
  * 12.PA2  : USART RX
- * 14.GND  :
  */
 
 #define PIN_TX_bp 1 // TX = PA1(Alt)
